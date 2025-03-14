@@ -1,12 +1,12 @@
 import React from 'react'
 import Home from './pages/Home/Home'
+import TimerComponent from './components/TimerComponents'
 
 const App = () => {
   return (
-    <>
-    <div className='bg-amber-300 text-amber-50'>Hello Dear!</div>
-    <Home />
-    </>
+    // <Home />
+    <TimerComponent />
+
   )
 }
 

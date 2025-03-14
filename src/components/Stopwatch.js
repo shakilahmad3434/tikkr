@@ -1,20 +1,16 @@
 import { useState, useEffect } from "react";
+import { useHistoryTable } from "./HistoryTable";
 
-export const useTimer = (initialMinutes  = 45) => {
-  const initialTime = initialMinutes * 60 * 1000; // 45 minutes in milliseconds
-  const [time, setTime] = useState(initialTime); // time in milliseconds
+export const useStopwatch = () => {
+  const [time, setTime] = useState(0); // time in milliseconds
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     let interval;
-    if (isRunning && time > 0) {
-      const startTime = Date.now();
+    if (isRunning) {
+      const startTime = Date.now() - time;
       interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        setTime((prev) => {
-          const newTime = initialTime - elapsed;
-          return newTime > 0 ? newTime : 0;
-        });
+        setTime(Date.now() - startTime);
       }, 10); // Update every 10 milliseconds
     }
     return () => clearInterval(interval);
@@ -23,13 +19,14 @@ export const useTimer = (initialMinutes  = 45) => {
   const start = () => setIsRunning(true);
   const stop = () => setIsRunning(false);
   const reset = () => {
+    useHistoryTable(formatTime())
     setIsRunning(false);
-    setTime(initialTime);
+    setTime(0);
   };
 
   // Format time into a readable string (HH:MM:SS:MS)
   const formatTime = () => {
-    const milliseconds = Math.floor((time % 1000) / 10); // 0-99
+    const milliseconds = Math.floor((time % 1000)/ 10);
     const seconds = Math.floor((time / 1000) % 60);
     const minutes = Math.floor((time / (1000 * 60)) % 60);
     const hours = Math.floor(time / (1000 * 60 * 60));
@@ -41,15 +38,11 @@ export const useTimer = (initialMinutes  = 45) => {
       .padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
   };
 
-  const isFinished = time <= 0;
-
   return { 
-    time, // raw milliseconds remaining
+    time: time, // raw milliseconds
     formattedTime: formatTime(), // formatted string
-    start,
-    stop,
-    reset,
-    isFinished, // boolean indicating if timer has reached zero,
-    isRunning
+    start, 
+    stop, 
+    reset 
   };
 };
