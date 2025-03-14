@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export const useTimer = (initialMinutes  = 45) => {
+export const useTimer = (initialMinutes  = 1) => {
   const initialTime = initialMinutes * 60 * 1000; // 45 minutes in milliseconds
   const [time, setTime] = useState(initialTime); // time in milliseconds
   const [isRunning, setIsRunning] = useState(false);

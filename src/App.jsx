@@ -4,8 +4,8 @@ import TimerComponent from './components/TimerComponents'
 
 const App = () => {
   return (
-    // <Home />
-    <TimerComponent />
+    <Home />
+    // <TimerComponent />
 
   )
 }
