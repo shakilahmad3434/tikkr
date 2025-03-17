@@ -1,55 +1,73 @@
-import { useState, useEffect } from "react";
+import React from "react";
 
-export const useTimer = (initialMinutes  = 1) => {
-  const initialTime = initialMinutes * 60 * 1000; // 45 minutes in milliseconds
-  const [time, setTime] = useState(initialTime); // time in milliseconds
-  const [isRunning, setIsRunning] = useState(false);
+const convertToSeconds = (timeStr) => {
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
+};
 
-  useEffect(() => {
-    let interval;
-    if (isRunning && time > 0) {
-      const startTime = Date.now();
-      interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        setTime((prev) => {
-          const newTime = initialTime - elapsed;
-          return newTime > 0 ? newTime : 0;
-        });
-      }, 10); // Update every 10 milliseconds
+const formatTime = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${String(hours).padStart(2, '0')}:` +
+         `${String(minutes).padStart(2, '0')}:` +
+         `${String(secs).padStart(2, '0')}`;
+};
+
+export const useTimer = () => {
+  const [initialTimeStr, setInitialTimeStr] = React.useState("00:10:00");
+  const initialSeconds = convertToSeconds(initialTimeStr);
+  const [timeLeft, setTimeLeft] = React.useState(initialSeconds);
+  const [isRunning, setisRunning] = React.useState(false);
+  const timeLeftRef = React.useRef(timeLeft);
+  timeLeftRef.current = timeLeft;
+  const intervalRef = React.useRef(null);
+
+  const start = () => {
+    setisRunning(true);
+    tick();
+  };
+
+  const stop = () => {
+    setisRunning(false);
+    clearTimeout(intervalRef.current);
+  };
+
+  const reset = () => {
+    setTimeLeft(initialSeconds);
+    setisRunning(false);
+    clearTimeout(intervalRef.current);
+    setInitialTimeStr("00:00:00")
+  };
+
+  const setTime = (newTimeStr) => {
+    setInitialTimeStr(newTimeStr);
+    setTimeLeft(convertToSeconds(newTimeStr));
+  };
+
+  const tick = () => {
+    if (isRunning && timeLeftRef.current > 0) {
+      setTimeLeft(timeLeftRef.current - 1);
+      timeLeftRef.current = timeLeftRef.current - 1;
+      intervalRef.current = setTimeout(tick, 1000);
+    } else {
+      clearTimeout(intervalRef.current);
     }
-    return () => clearInterval(interval);
+  };
+
+  React.useEffect(() => {
+    if (isRunning) {
+      tick();
+    }
+    return () => clearTimeout(intervalRef.current);
   }, [isRunning]);
 
-  const start = () => setIsRunning(true);
-  const stop = () => setIsRunning(false);
-  const reset = () => {
-    setIsRunning(false);
-    setTime(initialTime);
-  };
+  React.useEffect(() => {
+    setTimeLeft(convertToSeconds(initialTimeStr));
+  }, [initialTimeStr]);
 
-  // Format time into a readable string (HH:MM:SS:MS)
-  const formatTime = () => {
-    const milliseconds = Math.floor((time % 1000) / 10); // 0-99
-    const seconds = Math.floor((time / 1000) % 60);
-    const minutes = Math.floor((time / (1000 * 60)) % 60);
-    const hours = Math.floor(time / (1000 * 60 * 60));
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
-  };
+  const formattedTime = formatTime(timeLeft);
+  const isFinished = timeLeft <= 0;
 
-  const isFinished = time <= 0;
-
-  return { 
-    time, // raw milliseconds remaining
-    formattedTime: formatTime(), // formatted string
-    start,
-    stop,
-    reset,
-    isFinished, // boolean indicating if timer has reached zero,
-    isRunning
-  };
+  return { time: timeLeft, formattedTime, start, stop, reset, isFinished, isRunning, setTime };
 };
