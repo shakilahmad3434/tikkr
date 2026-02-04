@@ -1,186 +1,43 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useTimer } from "../../components/Timer";
+import { usePomodoro } from "../../hooks/usePomodoro";
+import { useTasks } from "../../context/TaskContext";
+import { useSettings } from "../../context/SettingsContext";
+import TaskList from "../../components/TaskList/TaskList";
+import SettingsModal from "../../components/Settings/SettingsModal";
 import {
-  Clock,
-  Bell,
-  Calendar,
-  Edit,
   RefreshCw,
   Play,
   Pause,
   X,
-  Check,
+  Calendar,
+  Trash2,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
-// Timer Edit Modal Component
-const TimerEditModal = ({ isOpen, onClose, onSave, initialTime }) => {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-
-  // Set initial values when modal opens
-
-  useEffect(() => {
-    if (isOpen && initialTime) {
-      const [h, m, s] = initialTime.split(":").map(Number);
-      setHours(h || 0);
-      setMinutes(m || 0);
-      setSeconds(s || 0);
-    }
-  }, [isOpen, initialTime]);
-
-  const handleSave = () => {
-    const formattedTime = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    onSave(formattedTime);
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700 shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-teal-400">Set Timer</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X size={24} />
-          </button>
-        </div>
-        <div className="flex justify-between items-center gap-4 mb-8">
-          {/* Hours Input */}
-          <div className="flex flex-col items-center">
-            <label className="text-gray-400 mb-2">Hours</label>
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => setHours((prev) => Math.min(prev + 1, 99))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-t-lg flex items-center justify-center"
-              >
-                ▲
-              </button>
-              <input
-                type="number"
-                value={hours}
-                onChange={(e) =>
-                  setHours(
-                    Math.min(Math.max(0, parseInt(e.target.value) || 0), 99)
-                  )
-                }
-                className="bg-gray-900 text-center w-12 h-12 text-xl border-x border-gray-700"
-                min="0"
-                max="99"
-              />
-              <button
-                onClick={() => setHours((prev) => Math.max(prev - 1, 0))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-b-lg flex items-center justify-center"
-              >
-                ▼
-              </button>
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-gray-500">:</div>
-
-          {/* Minutes Input */}
-          <div className="flex flex-col items-center">
-            <label className="text-gray-400 mb-2">Minutes</label>
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => setMinutes((prev) => Math.min(prev + 1, 59))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-t-lg flex items-center justify-center"
-              >
-                ▲
-              </button>
-              <input
-                type="number"
-                value={minutes}
-                onChange={(e) =>
-                  setMinutes(
-                    Math.min(Math.max(0, parseInt(e.target.value) || 0), 59)
-                  )
-                }
-                className="bg-gray-900 text-center w-12 h-12 text-xl border-x border-gray-700"
-                min="0"
-                max="59"
-              />
-              <button
-                onClick={() => setMinutes((prev) => Math.max(prev - 1, 0))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-b-lg flex items-center justify-center"
-              >
-                ▼
-              </button>
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-gray-500">:</div>
-
-          {/* Seconds Input */}
-          <div className="flex flex-col items-center">
-            <label className="text-gray-400 mb-2">Seconds</label>
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => setSeconds((prev) => Math.min(prev + 1, 59))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-t-lg flex items-center justify-center"
-              >
-                ▲
-              </button>
-              <input
-                type="number"
-                value={seconds}
-                onChange={(e) =>
-                  setSeconds(
-                    Math.min(Math.max(0, parseInt(e.target.value) || 0), 59)
-                  )
-                }
-                className="bg-gray-900 text-center w-12 h-12 text-xl border-x border-gray-700"
-                min="0"
-                max="59"
-              />
-              <button
-                onClick={() => setSeconds((prev) => Math.max(prev - 1, 0))}
-                className="bg-gray-700 hover:bg-gray-600 w-12 h-8 rounded-b-lg flex items-center justify-center"
-              >
-                ▼
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="bg-gray-700 py-2 px-4 rounded-xl hover:bg-gray-600 transition-all duration-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="bg-teal-600 py-2 px-4 rounded-xl hover:bg-teal-500 transition-all duration-300 flex items-center gap-2"
-          >
-            <Check size={18} /> Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// Home Component
 const Home = () => {
   const audioRef = useRef(null);
   const {
-    time,
+    mode,
+    timeLeft,
     formattedTime,
+    isRunning,
+    sessionsCompleted,
+    isFinished,
     start,
     stop,
     reset,
-    isFinished,
-    isRunning,
-    setTime,
-  } = useTimer();
+    skip,
+    setMode,
+    MODES,
+  } = usePomodoro();
 
-  const [storeTime, setStoreTime] = useState(formattedTime);
-  const [date, setDate] = useState("");
-  const [historyTime, setHistoryTime] = useState("");
+  const { activeTask, incrementPomodoro } = useTasks();
+  const { settings } = useSettings();
+
   const [history, setHistory] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [showTimeUp, setShowTimeUp] = useState(false);
 
   // Load history from local storage on initial render
   useEffect(() => {
@@ -190,38 +47,42 @@ const Home = () => {
     }
   }, []);
 
-  // Update storeTime when timer changes and is not running
-  useEffect(() => {
-    if (!isRunning) {
-      setStoreTime(formattedTime);
-    }
-  }, [formattedTime, isRunning]);
-
   // Handle timer finish logic
   useEffect(() => {
     if (isFinished && audioRef.current && hasInteracted) {
-      audioRef.current.play().catch((error) => {
-        console.error("Audio playback failed:", error);
-      });
+      if (settings.soundEnabled) {
+        audioRef.current.play().catch((error) => {
+          console.error("Audio playback failed:", error);
+        });
+      }
 
-      // Capture current date and time
-      const currentDate = new Date();
-      const monthDay = `${currentDate.toLocaleDateString("en-US", {
-        month: "short",
-      })} ${currentDate.getDate()}`;
-      
-      const currentTime = currentDate.toLocaleTimeString();
+      // Only record history and increment tasks for Work sessions
+      if (mode === MODES.WORK) {
+        if (activeTask) {
+          incrementPomodoro(activeTask.id);
+        }
 
-      setDate(monthDay);
-      setHistoryTime(currentTime);
+        const currentDate = new Date();
+        const monthDay = `${currentDate.toLocaleDateString("en-US", {
+          month: "short",
+        })} ${currentDate.getDate()}`;
+        
+        const currentTime = currentDate.toLocaleTimeString();
 
-      // Update history
-      const newEntry = { storeTime, date: monthDay, time: currentTime };
-      setHistory((prevHistory) => {
-        const updatedHistory = [newEntry, ...prevHistory];
-        localStorage.setItem("timerHistory", JSON.stringify(updatedHistory));
-        return updatedHistory;
-      });
+        const newEntry = { 
+          storeTime: formattedTime,
+          date: monthDay, 
+          time: currentTime,
+          sessionType: 'Work',
+          taskTitle: activeTask?.title || 'Focus'
+        };
+        
+        setHistory((prevHistory) => {
+          const updatedHistory = [newEntry, ...prevHistory];
+          localStorage.setItem("timerHistory", JSON.stringify(updatedHistory));
+          return updatedHistory;
+        });
+      }
     }
 
     // Auto-pause audio after 5 seconds
@@ -233,14 +94,11 @@ const Home = () => {
     }, 5000);
 
     return () => clearTimeout(audioTimeout);
-  }, [isFinished, storeTime, hasInteracted]);
+  }, [isFinished, mode, hasInteracted, activeTask, incrementPomodoro, settings.soundEnabled]);
 
-  // Reset the timer and clear history
+  // Reset logic
   const handleReset = () => {
     reset();
-    setDate("");
-    setHistoryTime("");
-    setStoreTime("");
   };
 
   // Clear individual history item
@@ -251,134 +109,231 @@ const Home = () => {
     localStorage.setItem("timerHistory", JSON.stringify(updatedHistory));
   };
 
-  // Handle saving the timer from the modal
-  const handleSaveTimer = (newTime) => {
-    setTime(newTime);
-  };
-
   const handleStart = () => {
     start();
     setHasInteracted(true);
   };
 
-  return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col md:flex-row justify-center items-center gap-8 p-6">
-      {/* Timer Section */}
-      <div className="w-full max-w-md backdrop-blur-sm bg-gray-800/60 p-8 rounded-3xl shadow-2xl border border-gray-700">
-        <div className="relative mb-8">
-          <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-teal-500 rounded-full p-4 shadow-lg">
-            <Clock size={32} className="text-gray-900" />
-          </div>
-          <h1 className="text-center text-2xl font-bold mt-4 mb-2 text-teal-400">
-            Focus Timer
-          </h1>
-          <div className="flex justify-center">
-            <div className="text-7xl font-bold text-center tracking-tight bg-gradient-to-r from-teal-400 via-cyan-300 to-blue-500 text-transparent bg-clip-text">
-              {formattedTime}
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-4 mt-8">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="flex items-center justify-center gap-2 bg-gray-700 py-3 px-4 rounded-xl hover:bg-gray-600 transition-all duration-300 text-teal-300 border border-gray-600"
-          >
-            <Edit size={18} /> Edit
-          </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center justify-center gap-2 bg-gray-700 py-3 px-4 rounded-xl hover:bg-gray-600 transition-all duration-300 text-orange-300 border border-gray-600"
-          >
-            <RefreshCw size={18} /> Reset
-          </button>
-          {!isRunning ? (
-            <button
-              onClick={handleStart}
-              className="flex items-center justify-center gap-2 bg-teal-600 py-3 px-4 rounded-xl hover:bg-teal-500 transition-all duration-300 text-white border border-teal-500"
-            >
-              <Play size={18} fill="currentColor" /> Start
-            </button>
-          ) : (
-            <button
-              onClick={stop}
-              className="flex items-center justify-center gap-2 bg-red-600 py-3 px-4 rounded-xl hover:bg-red-500 transition-all duration-300 text-white border border-red-500"
-            >
-              <Pause size={18} /> Stop
-            </button>
-          )}
-        </div>
-      </div>
+  const getModeColor = () => {
+    switch (mode) {
+      case MODES.SHORT_BREAK: return 'from-emerald-400 via-teal-300 to-cyan-500';
+      case MODES.LONG_BREAK: return 'from-blue-400 via-indigo-300 to-purple-500';
+      default: return 'from-orange-400 via-red-400 to-pink-500';
+    }
+  };
 
-      {/* Session History Section */}
-      <div className="w-full max-w-md backdrop-blur-sm bg-gray-800/60 p-8 rounded-3xl shadow-2xl border border-gray-700 mt-8 md:mt-0">
-        <div className="flex items-center gap-3 mb-6">
-          <Calendar size={24} className="text-blue-400" />
-          <h2 className="text-2xl font-bold text-blue-400">Session History</h2>
+  const getModeLabel = () => {
+    switch (mode) {
+      case MODES.SHORT_BREAK: return 'Short Break';
+      case MODES.LONG_BREAK: return 'Long Break';
+      default: return 'Focus Session';
+    }
+  };
+
+  return (
+    <section className="min-h-screen bg-[#0a0a0c] text-white flex flex-col items-center gap-12 p-4 md:p-10 lg:p-16 overflow-x-hidden transition-all duration-500">
+      
+      {/* Background Glow */}
+      <div className={`fixed top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[120px] opacity-20 pointer-events-none transition-all duration-1000 bg-gradient-to-br ${getModeColor()}`} />
+      
+      <div className="w-full max-w-6xl flex flex-col gap-10 md:gap-14 z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br ${getModeColor()} shadow-2xl shadow-black/50`}>
+              <SettingsIcon size={20} className="text-gray-900" />
+            </div>
+            <h1 className="text-2xl font-black uppercase tracking-[0.3em] italic text-gray-100">Tikkr</h1>
+          </div>
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="p-3.5 bg-gray-900/50 rounded-2xl border border-gray-800 hover:border-gray-700 transition-all group backdrop-blur-md"
+          >
+            <SettingsIcon size={22} className="text-gray-500 group-hover:text-orange-400 group-hover:rotate-90 transition-all duration-700" />
+          </button>
         </div>
-        <div className="max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-          {history.length > 0 ? (
-            <ul className="space-y-3">
-              {history.map((entry, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center p-3 bg-gray-700/50 rounded-xl border border-gray-600 hover:bg-gray-700 transition"
+
+        {/* Main Content: Timer & Tasks (Side by Side) */}
+        <div className="flex flex-col lg:flex-row gap-10 items-stretch">
+          {/* Timer Section */}
+          <div className="flex-1 flex flex-col">
+            <div className="w-full h-full backdrop-blur-2xl bg-gray-900/40 p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden group flex flex-col justify-center">
+              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+              
+              {/* Mode Switcher */}
+              <div className="flex bg-black/40 p-1.5 rounded-[1.25rem] mb-12 border border-white/5 relative z-10 mx-auto w-full max-w-sm">
+                <button
+                  onClick={() => setMode(MODES.WORK)}
+                  className={`flex-1 py-3 px-3 rounded-[0.8rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${mode === MODES.WORK ? 'bg-gray-800 text-orange-400 shadow-2xl' : 'text-gray-600 hover:text-gray-400'}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                      <span className="text-xl font-mono text-teal-300">
-                        {entry.storeTime}
-                      </span>
-                      <span className="text-xs text-gray-400">{`${entry.date} · ${entry.time}`}</span>
+                  Focus
+                </button>
+                <button
+                  onClick={() => setMode(MODES.SHORT_BREAK)}
+                  className={`flex-1 py-3 px-3 rounded-[0.8rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${mode === MODES.SHORT_BREAK ? 'bg-gray-800 text-emerald-400 shadow-2xl' : 'text-gray-600 hover:text-gray-400'}`}
+                >
+                  Short
+                </button>
+                <button
+                  onClick={() => setMode(MODES.LONG_BREAK)}
+                  className={`flex-1 py-3 px-3 rounded-[0.8rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${mode === MODES.LONG_BREAK ? 'bg-gray-800 text-blue-400 shadow-2xl' : 'text-gray-600 hover:text-gray-400'}`}
+                >
+                  Long
+                </button>
+              </div>
+
+              <div className="relative mb-12 text-center z-10">
+                <h2 className="text-gray-500 text-[11px] font-black tracking-[0.4em] uppercase mb-6 opacity-40">
+                  {getModeLabel()}
+                </h2>
+                <div className="flex justify-center">
+                  <div className={`text-8xl md:text-[10rem] font-black text-center tracking-tighter bg-gradient-to-r ${getModeColor()} text-transparent bg-clip-text drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700`}>
+                    {formattedTime}
+                  </div>
+                </div>
+
+                {mode === MODES.WORK && (
+                  <div className="mt-12 flex flex-col items-center gap-4">
+                    <div className="px-5 py-2 bg-black/40 rounded-full border border-white/5 flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)] animate-pulse" />
+                      <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest"> Focus Session #{sessionsCompleted + 1} </p>
+                    </div>
+                    
+                    <div className={`mt-2 transition-all duration-700 px-6 py-3 rounded-2xl border border-white/5 bg-white/[0.02] ${activeTask ? 'opacity-100 scale-100' : 'opacity-30 scale-95'}`}>
+                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-2 text-center">Current Focus</p>
+                      <p className={`text-base md:text-lg font-bold italic tracking-wide text-center px-4 transition-colors duration-500 ${activeTask ? 'text-orange-400' : 'text-gray-500'}`}>
+                        {activeTask ? activeTask.title : 'Select a task to focus'}
+                      </p>
                     </div>
                   </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-5 relative z-10 max-w-sm mx-auto w-full">
+                <button
+                  onClick={handleReset}
+                  className="flex flex-col items-center justify-center gap-3 bg-white/5 py-5 px-2 rounded-[2rem] hover:bg-white/10 transition-all duration-500 text-gray-600 border border-transparent hover:border-white/10 group active:scale-95"
+                >
+                  <RefreshCw size={22} className="group-hover:rotate-180 transition-transform duration-1000" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100">Reset</span>
+                </button>
+                
+                {!isRunning ? (
                   <button
-                    onClick={() => clearHistoryItem(index)}
-                    className="text-gray-500 hover:text-red-400 transition"
+                    onClick={handleStart}
+                    className={`flex flex-col items-center justify-center gap-3 py-7 px-2 rounded-[2.5rem] transition-all duration-500 text-white border-b-4 border-black/20 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] scale-110 -translate-y-2 active:translate-y-0 active:scale-100
+                      ${mode === MODES.WORK ? 'bg-orange-600 hover:bg-orange-500 shadow-orange-900/40' : 
+                        mode === MODES.SHORT_BREAK ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40' : 
+                        'bg-blue-600 hover:bg-blue-500 shadow-blue-900/40'}`}
                   >
-                    <X size={16} />
+                    <Play size={28} fill="currentColor" />
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">Start</span>
                   </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-              <Calendar size={40} className="mb-2 opacity-30" />
-              <p>No history available</p>
+                ) : (
+                  <button
+                    onClick={stop}
+                    className="flex flex-col items-center justify-center gap-3 py-7 px-2 rounded-[2.5rem] hover:bg-gray-100/20 transition-all duration-500 text-white border-b-4 border-black/20 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] scale-110 -translate-y-2 active:translate-y-0 active:scale-100 bg-gray-100/10"
+                  >
+                    <Pause size={28} fill="currentColor" />
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">Pause</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={skip}
+                  className="flex flex-col items-center justify-center gap-3 bg-white/5 py-5 px-2 rounded-[2rem] hover:bg-white/10 transition-all duration-500 text-gray-600 border border-transparent hover:border-white/10 group active:scale-95"
+                >
+                  <X size={22} className="group-hover:scale-125 transition-transform duration-500" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 group-hover:opacity-100">Skip</span>
+                </button>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Task List Section */}
+          <div className="lg:w-[400px] flex flex-col">
+            <TaskList />
+          </div>
+        </div>
+
+        {/* Activity Section (Bottom, Full Width) */}
+        <div className="w-full backdrop-blur-2xl bg-gray-900/40 p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl border border-white/5 overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent pointer-events-none" />
+          
+          <div className="flex items-center justify-between mb-12 relative z-10">
+            <div className="flex items-center gap-5">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-inner">
+                <Calendar size={22} className="text-blue-500" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-widest italic text-gray-100">Session Activity</h2>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Your recent records</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="px-4 py-2 bg-black/40 rounded-xl text-xs font-black text-gray-400 uppercase tracking-widest border border-white/5">
+                Total: {history.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="relative z-10">
+            {history.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+                {history.map((entry, index) => (
+                  <div
+                    key={index}
+                    className="group flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-transparent hover:border-white/10 hover:bg-white/[0.06] transition-all duration-500"
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={`w-3 h-3 rounded-full transition-all duration-700 ${entry.sessionType === 'Work' ? 'bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)]' : 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]'}`} />
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-sm font-black text-gray-200 truncate max-w-[150px] uppercase tracking-wide">
+                          {entry.taskTitle || 'Focus Session'}
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest opacity-60">
+                            {entry.date}
+                          </span>
+                          <span className="w-1 h-1 bg-gray-800 rounded-full" />
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest opacity-60">
+                            {entry.time}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => clearHistoryItem(index)}
+                      className="p-3 text-gray-700 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-24 text-gray-700 border border-dashed border-gray-800 rounded-[2.5rem]">
+                <div className="w-20 h-20 rounded-[2rem] bg-black/20 flex items-center justify-center mb-8 border border-white/5 shadow-inner">
+                  <Calendar size={28} className="opacity-10" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30 italic">Pioneer your first session</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Timer Edit Modal */}
-      <TimerEditModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSave={handleSaveTimer}
-        initialTime={formattedTime}
+      {/* Modals */}
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
       />
-
-      {/* Time Up Notification */}
-      {showTimeUp && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-8 rounded-xl shadow-xl text-center">
-              <Bell className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
-              <h2 className="text-2xl font-bold mb-4">Time's Up!</h2>
-              <button
-                onClick={() => setShowTimeUp(false)}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        )}
 
       {/* Audio Element */}
       <audio
         ref={audioRef}
         src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
       />
-
     </section>
   );
 };
