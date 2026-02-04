@@ -2,7 +2,7 @@
 
 **Tikkr** is a premium, developer-focused Pomodoro productivity timer designed to help you stay in the flow. It combines a powerful Pomodoro engine with integrated task management and a state-of-the-art "Glassmorphism" aesthetic.
 
-![Tikkr UI](https://github.com/shakilahmad3434/tikkr/public/homepage.png)
+![Tikkr UI](https://github.com/shakilahmad3434/tikkr/blob/main/public/homepage.png)
 
 ## ✨ Features
 
