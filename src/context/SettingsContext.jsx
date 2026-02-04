@@ -14,7 +14,6 @@ export const DEFAULT_SETTINGS = {
   soundEnabled: true,
   theme: 'dark',
 };
-
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 

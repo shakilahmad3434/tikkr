@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { usePomodoro } from "../../hooks/usePomodoro";
 import { useTasks } from "../../context/TaskContext";
 import { useSettings } from "../../context/SettingsContext";
@@ -17,27 +17,79 @@ import {
 // Home Component
 const Home = () => {
   const audioRef = useRef(null);
-  const {
-    mode,
-    timeLeft,
-    formattedTime,
-    isRunning,
-    sessionsCompleted,
-    isFinished,
-    start,
-    stop,
-    reset,
-    skip,
-    setMode,
-    MODES,
-  } = usePomodoro();
-
   const { activeTask, incrementPomodoro } = useTasks();
   const { settings } = useSettings();
 
   const [history, setHistory] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+
+  // Refs to avoid circular dependency in handleFinish
+  const activeTaskRef = useRef(activeTask);
+  const formattedTimeRef = useRef("");
+
+  useEffect(() => { activeTaskRef.current = activeTask; }, [activeTask]);
+
+  const handleFinish = useCallback((finishedMode) => {
+    // 1. Play Sound
+    if (audioRef.current && (hasInteracted || isAudioUnlocked)) {
+      if (settings.soundEnabled) {
+        audioRef.current.loop = true;
+        audioRef.current.play().catch(e => console.error("Completion audio failed:", e));
+        
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            audioRef.current.loop = false;
+          }
+        }, 10000);
+      }
+    }
+
+    // 2. Record History (Work Sessions Only)
+    if (finishedMode === 'work') {
+      const currentTask = activeTaskRef.current;
+      if (currentTask) {
+        incrementPomodoro(currentTask.id);
+      }
+
+      const currentDate = new Date();
+      const monthDay = `${currentDate.toLocaleDateString("en-US", { month: "short" })} ${currentDate.getDate()}`;
+      
+      const newEntry = { 
+        storeTime: formattedTimeRef.current,
+        date: monthDay, 
+        time: currentDate.toLocaleTimeString(),
+        sessionType: 'Work',
+        taskTitle: currentTask?.title || 'Focus Session'
+      };
+      
+      setHistory(prev => {
+        const updated = [newEntry, ...prev];
+        localStorage.setItem("timerHistory", JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [hasInteracted, isAudioUnlocked, settings.soundEnabled, incrementPomodoro]);
+
+  const {
+    mode,
+    timeLeft,
+    formattedTime,
+    isRunning,
+    sessionsCompleted,
+    start,
+    stop,
+    reset,
+    skip,
+    setMode,
+    MODES,
+  } = usePomodoro(handleFinish);
+
+  // Sync formattedTime to Ref for history
+  useEffect(() => { formattedTimeRef.current = formattedTime; }, [formattedTime]);
 
   // Load history from local storage on initial render
   useEffect(() => {
@@ -47,54 +99,36 @@ const Home = () => {
     }
   }, []);
 
-  // Handle timer finish logic
-  useEffect(() => {
-    if (isFinished && audioRef.current && hasInteracted) {
-      if (settings.soundEnabled) {
-        audioRef.current.play().catch((error) => {
-          console.error("Audio playback failed:", error);
-        });
-      }
-
-      // Only record history and increment tasks for Work sessions
-      if (mode === MODES.WORK) {
-        if (activeTask) {
-          incrementPomodoro(activeTask.id);
-        }
-
-        const currentDate = new Date();
-        const monthDay = `${currentDate.toLocaleDateString("en-US", {
-          month: "short",
-        })} ${currentDate.getDate()}`;
-        
-        const currentTime = currentDate.toLocaleTimeString();
-
-        const newEntry = { 
-          storeTime: formattedTime,
-          date: monthDay, 
-          time: currentTime,
-          sessionType: 'Work',
-          taskTitle: activeTask?.title || 'Focus'
-        };
-        
-        setHistory((prevHistory) => {
-          const updatedHistory = [newEntry, ...prevHistory];
-          localStorage.setItem("timerHistory", JSON.stringify(updatedHistory));
-          return updatedHistory;
-        });
-      }
+  const handleTestAlarm = () => {
+    if (audioRef.current) {
+      audioRef.current.loop = false;
+      audioRef.current.play().catch(e => console.error("Test failed:", e));
     }
+  };
 
-    // Auto-pause audio after 5 seconds
-    const audioTimeout = setTimeout(() => {
-      if (audioRef.current && !audioRef.current.paused) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+  // Global listener to unlock audio on first interaction (Browser Autoplay Policy fix)
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (audioRef.current && !isAudioUnlocked) {
+        // "Warm up" the audio element with a silent play
+        audioRef.current.play()
+          .then(() => {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setIsAudioUnlocked(true);
+            setHasInteracted(true);
+          })
+          .catch(e => console.log("Unlock failed, waiting for user gesture:", e));
       }
-    }, 5000);
+    };
 
-    return () => clearTimeout(audioTimeout);
-  }, [isFinished, mode, hasInteracted, activeTask, incrementPomodoro, settings.soundEnabled]);
+    window.addEventListener('mousedown', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
+    return () => {
+      window.removeEventListener('mousedown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+    };
+  }, [isAudioUnlocked]);
 
   // Reset logic
   const handleReset = () => {
@@ -327,6 +361,7 @@ const Home = () => {
       <SettingsModal 
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
+        onTestAlarm={handleTestAlarm}
       />
 
       {/* Audio Element */}

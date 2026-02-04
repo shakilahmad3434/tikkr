@@ -7,26 +7,16 @@ const MODES = {
   LONG_BREAK: 'longBreak',
 };
 
-export const usePomodoro = () => {
+export const usePomodoro = (onFinish) => {
   const { settings } = useSettings();
-  
+  const [isFinished, setIsFinished] = useState(false);
   const [mode, setMode] = useState(MODES.WORK);
   const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
 
   const timerRef = useRef(null);
-
-  // Update timeLeft when settings change if timer is not running
-  useEffect(() => {
-    if (!isRunning) {
-      if (mode === MODES.WORK) setTimeLeft(settings.workDuration * 60);
-      else if (mode === MODES.SHORT_BREAK) setTimeLeft(settings.shortBreakDuration * 60);
-      else if (mode === MODES.LONG_BREAK) setTimeLeft(settings.longBreakDuration * 60);
-    }
-  }, [settings, mode, isRunning]);
-
+  
   const switchMode = useCallback((newMode) => {
     setMode(newMode);
     setTimeLeft(
@@ -37,12 +27,11 @@ export const usePomodoro = () => {
           : settings.longBreakDuration * 60
     );
     setIsRunning(false);
-    setIsFinished(false);
   }, [settings]);
 
   const handleSessionComplete = useCallback(() => {
     setIsRunning(false);
-    setIsFinished(true);
+    if (onFinish) onFinish(mode);
 
     if (mode === MODES.WORK) {
       const nextSessionCount = sessionsCompleted + 1;
@@ -65,7 +54,7 @@ export const usePomodoro = () => {
         switchMode(MODES.WORK);
       }
     }
-  }, [mode, sessionsCompleted, settings, switchMode]);
+  }, [mode, sessionsCompleted, settings, switchMode, onFinish]);
 
   const tick = useCallback(() => {
     setTimeLeft((prev) => {

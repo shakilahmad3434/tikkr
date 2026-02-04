@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
 import { useTasks } from '../../context/TaskContext';
+import { useSettings } from '../../context/SettingsContext';
 import { Plus, Trash2, CheckCircle, Circle, Play, MoreVertical } from 'lucide-react';
 
 const TaskList = () => {
   const { tasks, addTask, deleteTask, toggleComplete, activateTask, activeTaskId } = useTasks();
+  const { settings } = useSettings();
   const [isAdding, setIsAdding] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [estPomodoros, setEstPomodoros] = useState(1);
+
+  // Success SFX for task completion
+  const playCheckSound = () => {
+    if (settings.soundEnabled) {
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"); 
+      audio.volume = 0.5;
+      audio.play().catch(e => console.error("Sound play failed:", e));
+    }
+  };
+
+  const handleToggle = (taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task && !task.isCompleted) {
+      playCheckSound();
+    }
+    toggleComplete(taskId);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -89,7 +108,7 @@ const TaskList = () => {
 
               <div className="flex items-center gap-3 md:gap-4 relative z-10 w-full pr-10">
                 <button 
-                  onClick={(e) => { e.stopPropagation(); toggleComplete(task.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleToggle(task.id); }}
                   className={`transition-all duration-300 transform hover:scale-125 ${task.isCompleted ? 'text-emerald-500' : 'text-gray-600 group-hover:text-gray-400'}`}
                 >
                   {task.isCompleted ? <CheckCircle size={22} /> : <Circle size={22} />}

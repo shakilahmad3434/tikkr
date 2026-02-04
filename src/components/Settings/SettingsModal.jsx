@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { X, Save, Bell, Clock, RefreshCcw } from 'lucide-react';
 
-const SettingsModal = ({ isOpen, onClose }) => {
+const SettingsModal = ({ isOpen, onClose, onTestAlarm }) => {
   const { settings, updateSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState(settings);
 
@@ -22,7 +22,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       <div className="bg-gray-800 rounded-[2.5rem] p-8 w-full max-w-md border border-gray-700 shadow-2xl animate-in zoom-in-95 duration-300">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20">
+            <div className={`w-10 h-10 bg-orange-500/10 rounded-2xl flex items-center justify-center border border-orange-500/20`}>
               <Clock className="text-orange-500" size={20} />
             </div>
             <h3 className="text-xl font-black text-gray-100 uppercase tracking-widest italic">Settings</h3>
@@ -67,27 +67,57 @@ const SettingsModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* Sound Settings */}
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Sound & Alerts</h4>
+            <div className="space-y-3">
+              <div 
+                onClick={() => handleChange('soundEnabled', !localSettings.soundEnabled)}
+                className="flex items-center justify-between p-4 bg-gray-900/50 rounded-2xl border border-gray-700 cursor-pointer hover:bg-gray-800 transition-all group"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-bold text-gray-300">Alarm Sound</span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onTestAlarm(); }}
+                    className="text-[9px] font-black text-orange-500 uppercase tracking-[0.2em] hover:text-orange-400 text-left flex items-center gap-1.5 group/test"
+                  >
+                    <Bell size={10} className="group-hover/test:animate-bounce" /> Test Sound
+                  </button>
+                </div>
+                <div 
+                  className={`w-12 h-6 rounded-full transition-all duration-500 relative ${localSettings.soundEnabled ? 'bg-orange-600 shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-gray-700'}`}
+                >
+                  <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${localSettings.soundEnabled ? 'translate-x-6' : ''}`} />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Auto Start Options */}
           <div className="space-y-4">
             <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Automation</h4>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-2xl border border-gray-700">
+              <div 
+                onClick={() => handleChange('autoStartBreaks', !localSettings.autoStartBreaks)}
+                className="flex items-center justify-between p-4 bg-gray-900/50 rounded-2xl border border-gray-700 cursor-pointer hover:bg-gray-800 transition-all"
+              >
                 <span className="text-xs font-bold text-gray-300">Auto-start Breaks</span>
-                <button 
-                  onClick={() => handleChange('autoStartBreaks', !localSettings.autoStartBreaks)}
-                  className={`w-12 h-6 rounded-full transition-all duration-500 relative ${localSettings.autoStartBreaks ? 'bg-orange-600' : 'bg-gray-700'}`}
+                <div 
+                  className={`w-12 h-6 rounded-full transition-all duration-500 relative ${localSettings.autoStartBreaks ? 'bg-orange-600 shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-gray-700'}`}
                 >
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${localSettings.autoStartBreaks ? 'translate-x-6' : ''}`} />
-                </button>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-2xl border border-gray-700">
+              <div 
+                onClick={() => handleChange('autoStartPomodoros', !localSettings.autoStartPomodoros)}
+                className="flex items-center justify-between p-4 bg-gray-900/50 rounded-2xl border border-gray-700 cursor-pointer hover:bg-gray-800 transition-all"
+              >
                 <span className="text-xs font-bold text-gray-300">Auto-start Pomodoros</span>
-                <button 
-                   onClick={() => handleChange('autoStartPomodoros', !localSettings.autoStartPomodoros)}
-                  className={`w-12 h-6 rounded-full transition-all duration-500 relative ${localSettings.autoStartPomodoros ? 'bg-orange-600' : 'bg-gray-700'}`}
+                <div 
+                  className={`w-12 h-6 rounded-full transition-all duration-500 relative ${localSettings.autoStartPomodoros ? 'bg-orange-600 shadow-[0_0_15px_rgba(234,88,12,0.4)]' : 'bg-gray-700'}`}
                 >
                   <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${localSettings.autoStartPomodoros ? 'translate-x-6' : ''}`} />
-                </button>
+                </div>
               </div>
             </div>
           </div>
