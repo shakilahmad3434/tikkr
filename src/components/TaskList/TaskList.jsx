@@ -39,32 +39,33 @@ const TaskList = () => {
             onChange={(e) => setNewTaskTitle(e.target.value)}
             className="w-full bg-transparent text-gray-200 placeholder-gray-500 border-b border-gray-700 pb-2 mb-4 focus:outline-none focus:border-orange-500 transition-colors"
           />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Est Pomodoros</span>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between bg-black/20 p-3 rounded-xl border border-white/5">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Est Pomodoros</span>
+              <div className="flex items-center gap-3">
                 <button 
                   type="button"
                   onClick={() => setEstPomodoros(Math.max(1, estPomodoros - 1))}
-                  className="w-6 h-6 bg-gray-800 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                  className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-all active:scale-90"
                 > - </button>
-                <span className="text-sm font-bold text-orange-400 w-4 text-center">{estPomodoros}</span>
+                <span className="text-sm font-black text-orange-400 w-4 text-center">{estPomodoros}</span>
                 <button 
                    type="button"
                   onClick={() => setEstPomodoros(Math.min(10, estPomodoros + 1))}
-                  className="w-6 h-6 bg-gray-800 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                  className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-all active:scale-90"
                 > + </button>
               </div>
             </div>
-            <div className="flex gap-2">
+            
+            <div className="flex items-center gap-3">
               <button 
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-gray-200 uppercase tracking-widest"
+                className="flex-1 py-3 text-[10px] font-black text-gray-500 hover:text-gray-300 uppercase tracking-widest transition-colors"
               > Cancel </button>
               <button 
                 type="submit"
-                className="px-4 py-1.5 bg-orange-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-orange-500 transition-colors shadow-lg"
+                className="flex-[2] py-3 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 transition-all shadow-xl shadow-orange-900/20 active:scale-95 border border-orange-400"
               > Add Task </button>
             </div>
           </div>
